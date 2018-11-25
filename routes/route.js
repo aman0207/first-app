@@ -106,7 +106,98 @@ function setResponse(req, startTime){
 }
 
 router.get('/stats',(req, resp)=>{
-
+    RespModel.find((err, respModel)=>{
+        console.log(respModel.length);
+        var getReqs = respModel.filter((eachObj)=>{
+            return eachObj.method === 'GET' ;
+        })
+        
+        var putReqs = respModel.filter((eachObj)=>{
+            return eachObj.method === 'PUT' ;
+        })
+        var postReqs = respModel.filter((eachObj)=>{
+            return eachObj.method === 'POST' ;
+        })
+        var delReqs = respModel.filter((eachObj)=>{
+            return eachObj.method === 'DELETE' ;
+        });
+        console.log(getReqs.length);
+        var oldHr = new Date(Date.now()-3600000);
+        
+        console.log(oldHr);
+        var oldHrReqs = respModel.filter((eachObj)=>{
+            return eachObj.time > oldHr;
+        });
+        console.log(oldHrReqs.length);
+        var oldHrGETReq = oldHrReqs.filter((eachObj)=>{
+            return eachObj.method === 'GET' ;
+        });
+        var oldHrPUTReq = oldHrReqs.filter((eachObj)=>{
+            return eachObj.method === 'PUT' ;
+        });
+        var oldHrPOSTReq = oldHrReqs.filter((eachObj)=>{
+            return eachObj.method === 'POST' ;
+        });
+        var oldHrDELETEReq = oldHrReqs.filter((eachObj)=>{
+            return eachObj.method === 'DELETE' ;     
+        });
+        var oldMin = new Date(Date.now()-60000);
+        console.log(oldMin)
+        var oldMinReqs = respModel.filter((eachObj)=>{
+            return eachObj.time > oldMin ;
+    });
+    var oldMinGETReq = oldMinReqs.filter((eachObj)=>{
+        return eachObj.method === 'GET' ;
+    });
+    var oldMinPUTReq = oldMinReqs.filter((eachObj)=>{
+        return eachObj.method === 'PUT' ;
+    }); 
+    var oldMinPOSTReq = oldMinReqs.filter((eachObj)=>{
+        return eachObj.method === 'POST' ;
+    });
+    var oldMinDELETEReq = oldMinReqs.filter((eachObj)=>{
+        return eachObj.method === 'DELETE' ;
+    });
+    console.log(oldMinReqs.length);
+        resp.json({
+            totalNumberOfRequest : respModel.length,
+            totalGetRequests : getReqs.length,
+            averageResponseTimeOfGetReq : calAvg(getReqs),
+            totalPostRequests : postReqs.length,
+            averageResponseTimeOfPostReq : calAvg(postReqs),
+            totalPutRequests : putReqs.length,
+            averageResponseTimeOfPutReq : calAvg(putReqs),
+            totalDeleteRequests : delReqs.length,
+            averageResponseTimeOfDeleteReq : calAvg(delReqs),
+            pastOneHourDetails : {
+                totalGetRequests : oldHrGETReq.length,
+                averageResponseTimeOfGetReq : calAvg(oldHrGETReq),
+                totalPostRequests : oldHrPOSTReq.length,
+                averageResponseTimeOfPostReq : calAvg(oldHrPOSTReq),
+                totalPutRequests : oldHrPUTReq.length,
+                averageResponseTimeOfPutReq : calAvg(oldHrPUTReq),
+                totalDeleteRequests : oldHrDELETEReq.length,
+                averageResponseTimeOfDeleteReq : calAvg(oldHrDELETEReq)
+            },
+            pastOneMinuteDates: {
+                totalGetRequests : oldMinGETReq.length,
+                averageResponseTimeOfGetReq : calAvg(oldMinGETReq),
+                totalPostRequests : oldMinPOSTReq.length,
+                averageResponseTimeOfPostReq : calAvg(oldMinPOSTReq),
+                totalPutRequests : oldMinPUTReq.length,
+                averageResponseTimeOfPutReq : calAvg(oldMinPUTReq),
+                totalDeleteRequests : oldMinDELETEReq.length,
+                averageResponseTimeOfDeleteReq : calAvg(oldMinDELETEReq)
+            }
+        });
+    })
 })
 
+function calAvg(dataArr){
+    var total = 0;
+    for(var i =0;i< dataArr.length;i++){
+        total+= dataArr[i].duration;
+    }
+    return (total/dataArr.length) || 0 ;
+}
 module.exports = router;
